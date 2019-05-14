@@ -9,7 +9,7 @@ import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.scripting.xmltags.XMLLanguageDriver;
 import org.apache.ibatis.session.Configuration;
 
-import com.easysoft.commons.annotation.Column;
+import com.easysoft.commons.annotation.VirtualColumn;
 import com.google.common.base.CaseFormat;
 
 /**
@@ -27,7 +27,7 @@ public class SimpleUpdateLangDriver extends XMLLanguageDriver implements Languag
 			sb.append("<set>");
 
 			for (Field field : parameterType.getDeclaredFields()) {
-				 if (!field.isAnnotationPresent(Column.class)) {  
+				 if (!field.isAnnotationPresent(VirtualColumn.class)) {  
 					String tmp = "<if test=\"_field != null\">_column=#{_field},</if>";
 					sb.append(tmp.replaceAll("_field", field.getName()).replaceAll("_column",
 							CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, field.getName())));

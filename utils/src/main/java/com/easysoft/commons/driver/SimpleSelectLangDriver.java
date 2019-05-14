@@ -10,8 +10,8 @@ import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.scripting.xmltags.XMLLanguageDriver;
 import org.apache.ibatis.session.Configuration;
 
-import com.easysoft.commons.annotation.Column;
 import com.easysoft.commons.annotation.LikeQuery;
+import com.easysoft.commons.annotation.VirtualColumn;
 import com.google.common.base.CaseFormat;
 
 /**
@@ -33,7 +33,7 @@ public class SimpleSelectLangDriver extends XMLLanguageDriver implements Languag
 			Field[] fs = new Field[]{};
 			fs = getBeanFields(parameterType,fs);
 			for (Field field : fs) {
-				 if (!field.isAnnotationPresent(Column.class)) { 
+				 if (!field.isAnnotationPresent(VirtualColumn.class)) { 
 					if(field.isAnnotationPresent(LikeQuery.class)){
 						String value = field.getAnnotation(LikeQuery.class).value();
 						String patten = "";

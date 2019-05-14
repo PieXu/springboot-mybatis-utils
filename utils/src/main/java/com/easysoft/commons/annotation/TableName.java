@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * @author IvanHsu
  * @2018年5月8日 上午11:58:17
  */
-@Target(ElementType.FIELD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface TableName {

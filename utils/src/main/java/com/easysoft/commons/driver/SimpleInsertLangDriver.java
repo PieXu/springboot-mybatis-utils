@@ -10,7 +10,7 @@ import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.scripting.xmltags.XMLLanguageDriver;
 import org.apache.ibatis.session.Configuration;
 
-import com.easysoft.commons.annotation.Column;
+import com.easysoft.commons.annotation.VirtualColumn;
 import com.google.common.base.CaseFormat;
 
 /**
@@ -34,7 +34,7 @@ public class SimpleInsertLangDriver extends XMLLanguageDriver implements Languag
 			Field[] fs = new Field[]{};
 					fs = getBeanFields(parameterType,fs);
 			for (Field field : fs) {
-				 if (!field.isAnnotationPresent(Column.class)) {  
+				 if (!field.isAnnotationPresent(VirtualColumn.class)) {  
 					sb.append(CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, field.getName()) + ",");
 					tmp.append("#{" + field.getName() + "},");
 				 }
