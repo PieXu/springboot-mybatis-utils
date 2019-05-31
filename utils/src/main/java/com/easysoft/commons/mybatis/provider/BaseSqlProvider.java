@@ -6,12 +6,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.jdbc.SQL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.alibaba.druid.util.StringUtils;
+import com.easysoft.commons.annotation.LikeQuery;
 import com.easysoft.commons.annotation.PrimaryKey;
 import com.easysoft.commons.annotation.TableName;
 import com.easysoft.commons.annotation.VirtualColumn;
@@ -61,26 +63,49 @@ public class BaseSqlProvider<T> {
 		/*
 		 * 1、取得当前的参数信息
 		 */
-		Field[] fs = new Field[]{};
-		fs = getBeanFields(bean.getClass(),fs);
-		Map<String, Object> initValueMap = this.initValueMap(bean, fs);
-		/*
-		 * 2、查询SQL拼装
-		 */
-		SQL querySQL = new SQL();
-		querySQL.SELECT("*").FROM(this.getTableName(bean));
-		/*
-		 * 3、封装查询条件的SQL部分
-		 */
-		for (Field fileId : fs) {
-			if(!fileId.isAnnotationPresent(VirtualColumn.class)){
-				 if(initValueMap.containsKey(fileId.getName())){
-					 querySQL.WHERE(" _column = #{_field}".replaceAll("_field", fileId.getName()).replaceAll("_column",
-								CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, fileId.getName())));
-				 }
+		try {
+			Field[] fs = new Field[] {};
+			fs = getBeanFields(bean.getClass(), fs);
+			Map<String, Object> initValueMap = this.initValueMap(bean, fs);
+			/*
+			 * 2、查询SQL拼装
+			 */
+			SQL querySQL = new SQL();
+			querySQL.SELECT("*").FROM(this.getTableName(bean));
+			/*
+			 * 3、封装查询条件的SQL部分
+			 */
+			for (Field fileId : fs) {
+				if (!fileId.isAnnotationPresent(VirtualColumn.class)) {
+					if (initValueMap.containsKey(fileId.getName())) {
+						if (fileId.isAnnotationPresent(LikeQuery.class)) {// 模糊查询
+							String value = fileId.getAnnotation(LikeQuery.class).value();
+							String paramValue = (String) initValueMap.get(fileId.getName());
+							String setName = parSetName(fileId.getName());
+							Method setMethod = bean.getClass().getMethod(setName, fileId.getType());
+							String setValue = "";
+							if ("full".equalsIgnoreCase(value)) {// 全匹配
+								setValue = SQLHelper.escape(paramValue, true, true);
+							} else if ("left".equalsIgnoreCase(value)) {// 左边匹配
+								setValue = SQLHelper.escape(paramValue, true, false);
+							} else if ("right".equalsIgnoreCase(value)) {// 右边匹配
+								setValue = SQLHelper.escape(paramValue, false, true);
+							}
+							setMethod.invoke(bean, setValue);
+							querySQL.WHERE(" _column like #{_field} ".replaceAll("_field", fileId.getName()).replaceAll(
+									"_column",CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, fileId.getName())));
+						} else {
+							querySQL.WHERE(" _column = #{_field}".replaceAll("_field", fileId.getName())
+									.replaceAll("_column",CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, fileId.getName())));
+						}
+					}
+				}
 			}
+			return querySQL.toString();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		return querySQL.toString();
+		return null;
 	}
 	
 	/**
@@ -176,6 +201,28 @@ public class BaseSqlProvider<T> {
 		return delSQL.toString();
 	}
 	
+	/**
+	 * 
+	* Title: updateToDel
+	* Description: 批量删除
+	* @param bean
+	* @param ids
+	* @return
+	 */
+	public String changeDelFlag(T bean,@Param("ids")String[] ids,@Param("delFlag")String delFlag)
+	{
+		StringBuffer sb = new StringBuffer();
+		sb.append("update ").append(this.getTableName(bean)).append(" set del_flag=#{delFlag} where id in (");
+		for (int i = 0; i < ids.length; i++) {
+			sb.append("#{ids[" + i + "]}");
+			if (i < ids.length - 1) {
+				sb.append(",");
+			}
+		}
+		sb.append(")");
+		return sb.toString();
+	}
+	
 	
 	/**
 	 * 获取所有的字段属性
@@ -216,7 +263,14 @@ public class BaseSqlProvider<T> {
 						Method m = bean.getClass().getMethod("get"+fileIdName.substring(0, 1).toUpperCase() + fileIdName.substring(1));
 						Object invoke = m.invoke(bean);
 						if(null!=invoke){
-							valmap.put(fileIdName, invoke);
+							if(invoke instanceof String){
+								if(!StringUtils.isEmpty((String)invoke)){
+									valmap.put(fileIdName, invoke);
+								}
+							}else{
+								valmap.put(fileIdName, invoke);
+							}
+							
 						}
 					}
 				}
@@ -255,6 +309,19 @@ public class BaseSqlProvider<T> {
 		} 
 		return tableName;
 	}
+	
+	/** 
+	 * 拼接在某属性的 set方法 
+	 * @param fieldName 
+	 * @return String 
+	 */ 
+	private static String parSetName(String fieldName) {  
+	    if (null == fieldName || "".equals(fieldName)) {  
+	        return null;  
+	    }  
+	    return "set" + fieldName.substring(0, 1).toUpperCase()  
+	            + fieldName.substring(1);  
+	} 
 	
 	/**
 	 * 

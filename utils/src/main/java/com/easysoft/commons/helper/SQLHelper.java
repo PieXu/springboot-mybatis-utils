@@ -22,7 +22,7 @@ public class SQLHelper {
 	 */
 	public static String escape(String likeStr,boolean start,boolean end)
 	{
-		StringBuffer resultStr = new StringBuffer("'");
+		StringBuffer resultStr = new StringBuffer("");
 		if(start){
 			resultStr.append("%");
 		}
@@ -39,9 +39,22 @@ public class SQLHelper {
 			resultStr.append(likeStr);
 			if(end)
 				resultStr.append("%");
-			resultStr.append("'");
 		}
 		return resultStr.toString();
+	}
+	
+	/**
+	 * 
+	* Title: escape
+	* Description: 
+	* @param likeStr
+	* @return
+	 */
+	public static String escape(String likeStr)
+	{
+		if(isNeedEscape(likeStr))
+			return escape(likeStr,false,false);
+		return likeStr;
 	}
 	
 	private static boolean isNeedEscape(String likeStr)

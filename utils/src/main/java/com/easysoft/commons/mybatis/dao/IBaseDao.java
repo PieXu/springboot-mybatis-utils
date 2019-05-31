@@ -1,7 +1,10 @@
 package com.easysoft.commons.mybatis.dao;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.DeleteProvider;
 import org.apache.ibatis.annotations.InsertProvider;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.UpdateProvider;
 
@@ -37,7 +40,17 @@ public interface IBaseDao<T> {
 	* @return
 	 */
  	@SelectProvider(type = BaseSqlProvider.class, method = "getListByExample")
-	public Page<T> getListByExample(T record);
+	public Page<T> getPageByExample(T record);
+ 	
+ 	/**
+ 	 * 
+ 	* Title: getListByExample
+ 	* Description: 
+ 	* @param record
+ 	* @return
+ 	 */
+	@SelectProvider(type = BaseSqlProvider.class, method = "getListByExample")
+	public List<T> getListByExample(T record);
  	
  	/**
  	* <p>Title: insert</p>
@@ -66,5 +79,14 @@ public interface IBaseDao<T> {
  	 */
  	@DeleteProvider(type = BaseSqlProvider.class, method = "delete")
  	public void delete(T record);
+ 	
+ 	/**
+ 	 * 
+ 	* Title: delBathById
+ 	* Description: 按主键批量删除,逻辑删除 del_flag 字段
+ 	* @param ids
+ 	 */
+	@UpdateProvider(type = BaseSqlProvider.class, method = "changeDelFlag")
+ 	public void changeDelFlag(T record,@Param("ids")String[] ids,@Param("delFlag")String delFlag);
 	
 }

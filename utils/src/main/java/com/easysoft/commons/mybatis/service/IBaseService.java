@@ -1,5 +1,7 @@
 package com.easysoft.commons.mybatis.service;
 
+import java.util.List;
+
 import com.github.pagehelper.Page;
 
 /**
@@ -23,6 +25,15 @@ public interface IBaseService<T> {
 	* @return
 	 */
 	public Page<T> getPage(T record,Integer pageNum,Integer pageSize,String orderBy);
+	
+	/**
+	 * 
+	* <p>Title: getPage</p>
+	* <p>Description: 查询所有 不分页查询</p>
+	* @param record
+	* @return
+	 */
+	public List<T> getList(T record);
 	
 	/**
 	 * 
@@ -56,4 +67,13 @@ public interface IBaseService<T> {
 	* @param record
 	 */
 	public void delete(T record);
+	
+	/**
+	 * 
+	* Title: delByIds
+	* Description: 主键批量删除
+	* @param record
+	* @param ids
+	 */
+	public void delByIds(T record,String ids);
 }
