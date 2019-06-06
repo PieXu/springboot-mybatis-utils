@@ -18,8 +18,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.TransactionManagementConfigurer;
 
-//import com.github.pagehelper.PageInterceptor;
-
 /**
  * MyBatis集成配置DruidDataSource数据源
  * @author IbanHsu
